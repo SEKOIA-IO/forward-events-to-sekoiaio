@@ -15,6 +15,13 @@ Create a Python virtual environment:
 $ python3 -m venv <path to the venv>
 ```
 
+Clone the repository:
+
+```bash
+$ git clone https://github.com/SEKOIA-IO/forward-events-to-sekoiaio .
+$ cd forward-events-to-sekoiaio
+```
+
 Install the dependencies:
 
 ```bash
