@@ -4,7 +4,9 @@ from typing import Sequence
 from urllib.parse import urljoin
 
 import requests
-import tenacity
+from requests.adapters import HTTPAdapter, Retry
+
+retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
 
 
 class Forwarder:
@@ -17,6 +19,7 @@ class Forwarder:
         self.intake_key = intake_key
         self.logger = logger
         self.session = requests.Session()
+        self.session.mount("https://", HTTPAdapter(max_retries=retries))
 
     @cached_property
     def url(self):
@@ -31,36 +34,30 @@ class Forwarder:
         list_of_events = list(events)
 
         try:
-            for attempt in tenacity.Retrying(
-                stop=tenacity.stop_after_attempt(5),
-                wait=tenacity.wait_exponential(multiplier=2, min=1, max=10),
-                retry=tenacity.retry_if_exception_type(requests.Timeout),
-            ):
-                with attempt:
-                    response: requests.Response = self.session.post(
-                        self.url,
-                        json={"intake_key": self.intake_key, "jsons": list_of_events},
-                    )
+            response: requests.Response = self.session.post(
+                self.url,
+                json={"intake_key": self.intake_key, "jsons": list_of_events},
+            )
 
-                    if not response.ok:
-                        self.logger.error(
-                            f"Failed to send {len(list_of_events)} events to {self.intake_host}",
-                            extra=dict(
-                                url=self.url,
-                                status_code=response.status_code,
-                                response=response.content,
-                            ),
-                        )
-                    else:
-                        self.logger.info(
-                            f"sent {len(list_of_events)} events to {self.intake_host}",
-                            extra=dict(
-                                url=self.url,
-                                status_code=response.status_code,
-                                response=",".join(response.json().get("event_ids")),
-                            ),
-                        )
-        except tenacity.RetryError as error:
+            if not response.ok:
+                self.logger.error(
+                    f"Failed to send {len(list_of_events)} events to {self.intake_host}",
+                    extra=dict(
+                        url=self.url,
+                        status_code=response.status_code,
+                        response=response.content,
+                    ),
+                )
+            else:
+                self.logger.info(
+                    f"sent {len(list_of_events)} events to {self.intake_host}",
+                    extra=dict(
+                        url=self.url,
+                        status_code=response.status_code,
+                        response=",".join(response.json().get("event_ids")),
+                    ),
+                )
+        except Exception as error:
             self.logger.exception(
                 f"Failed to send {len(list_of_events)} events to {self.intake_host}",
                 exc_info=error,
