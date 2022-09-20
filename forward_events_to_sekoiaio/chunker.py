@@ -1,18 +1,15 @@
-from typing import Generator, Sequence
-
-
 class Chunker:
     """
     Split a sequence of events into fixed-size of chunks
     """
 
-    def __init__(self, chunk_size: int):
+    def __init__(self, chunk_size):
         """
         :param int chunk_size: The size of chunks
         """
         self.chunk_size = chunk_size
 
-    def chunk(self, events: Sequence) -> Generator[list, None, None]:
+    def chunk(self, events):
         """
         Chunk events into smaller groups
 

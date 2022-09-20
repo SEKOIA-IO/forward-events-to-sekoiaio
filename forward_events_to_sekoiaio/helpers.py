@@ -1,10 +1,9 @@
 import sys
 from contextlib import contextmanager
-from typing import Generator, Sequence
 
 
 @contextmanager
-def reader(filepath: str):
+def reader(filepath):
     if filepath.strip() == "-":
         yield sys.stdin
     else:
@@ -12,7 +11,7 @@ def reader(filepath: str):
             yield f
 
 
-def normalize_events(events: Sequence) -> Generator[str, None, None]:
+def normalize_events(events):
     """
     Normalize the events
 

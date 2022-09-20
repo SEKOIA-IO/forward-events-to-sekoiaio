@@ -12,7 +12,7 @@ class Forwarder:
     Forward events to SEKOIA.IO
     """
 
-    def __init__(self, intake_host: str, intake_key: str, logger: logging.Logger):
+    def __init__(self, intake_host, intake_key, logger):
         self.intake_host = intake_host
         self.intake_key = intake_key
         self.logger = logger
@@ -22,7 +22,7 @@ class Forwarder:
     def url(self):
         return urljoin(self.intake_host, "/batch")
 
-    def send(self, events: Sequence):
+    def send(self, events):
         """
         Forward events
 
