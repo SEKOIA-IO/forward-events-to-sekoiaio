@@ -9,17 +9,17 @@ This script requires at Python3
 
 ## Installation
 
-Create a Python virtual environment:
-
-```bash
-$ python3 -m venv <path to the venv>
-```
-
-Clone the repository:
+Get the module from the releases or clone the repository:
 
 ```bash
 $ git clone https://github.com/SEKOIA-IO/forward-events-to-sekoiaio .
 $ cd forward-events-to-sekoiaio
+```
+
+Create a Python virtual environment:
+
+```bash
+$ python3 -m venv <path to the venv>
 ```
 
 Install the dependencies:
