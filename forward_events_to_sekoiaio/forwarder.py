@@ -1,10 +1,12 @@
-import logging
+import json
 from functools import cached_property
 from typing import Sequence
 from urllib.parse import urljoin
 
 import requests
 from requests.adapters import HTTPAdapter, Retry
+
+from forward_events_to_sekoiaio.constants import INTAKE_PAYLOAD_BYTES_MAX_SIZE
 
 retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
 
@@ -34,9 +36,27 @@ class Forwarder:
         list_of_events = list(events)
 
         try:
+            payload = {"intake_key": self.intake_key, "jsons": list_of_events}
+            request_body = json.dumps(payload)
+
+            body_len = len(request_body)
+            if body_len > INTAKE_PAYLOAD_BYTES_MAX_SIZE:
+                self.logger.warning(
+                    (
+                        "The events exceeds the maximun length allowed. Expected less than "
+                        f"{INTAKE_PAYLOAD_BYTES_MAX_SIZE/1024}kio. Got {body_len} bytes"
+                    ),
+                    extra=dict(
+                        url=self.url,
+                        status_code=None,
+                        response=None,
+                    ),
+                )
+
             response: requests.Response = self.session.post(
                 self.url,
-                json={"intake_key": self.intake_key, "jsons": list_of_events},
+                data=request_body,
+                headers={"Content-Type": "application/json"},
             )
 
             if not response.ok:
